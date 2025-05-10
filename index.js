@@ -103,7 +103,7 @@ app.get('/discord/:userId', async (req, res) => {
   const userData = await getUserData(userId);
 
   if (!userData || !userData.data) {
-    return res.status(404).json({ error: 'probably ratelimited' });
+    return res.status(404).json({ error: 'user not found join discord.gg/lanyard' });
   }
 
   const filteredData = {
