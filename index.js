@@ -7,9 +7,11 @@ const env = require('dotenv').config();
 const app = express();
 
 const allowedOrigins = ['http://localhost', 'https://cuzimstupi4.eu'];
+const allowedIP = process.env.ip || "127.0.0.1"
 
 app.use((req, res, next) => {
-  if (req.ip === env.process.ip) return next();
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (ip === allowedIP) return next();
   ratelimiter({
     windowMs: 60 * 1000,
     max: 5,
@@ -94,10 +96,10 @@ const getUserData = async (userId) => {
   }
 };
 
-app.get('/discord', async (req, res) => {
+app.get('/discord/:userId', async (req, res) => {
   const startTime = Date.now();
-  // const userId = req.params.userId;
-  const userId = process.env.userId;
+  const userId = req.params.userId;
+  // const userId = process.env.userId;
   const userData = await getUserData(userId);
 
   if (!userData || !userData.data) {
