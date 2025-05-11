@@ -6,7 +6,9 @@ const axios = require('axios');
 const env = require('dotenv').config();
 const app = express();
 
-const allowedOrigins = ['http://localhost', 'https://cuzimstupi4.eu'];
+app.set('trust proxy', 1);
+
+const allowedOrigins = ['http://localhost', 'https://cuzimstupi4.eu', 'http://localhost:4321'];
 const allowedIP = process.env.ip || "127.0.0.1"
 
 app.use((req, res, next) => {
@@ -78,7 +80,11 @@ app.get('/:month/:day/:year', (req, res) => {
     res.json({
       age: result.age,
       nextBirthday: result.nextBirthday,
-      timetook: Date.now() - startTime + 'ms'
+      timetook: Date.now() - startTime + 'ms',
+      modt: {
+        "text": "CuzImStupi4 says hi",
+        "servertime": new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }) + "Europe/Berlin (UTC+2)",
+      }
     });
   } catch {
     res.status(400).json({ error: 'invalid date' });
@@ -124,6 +130,11 @@ app.get('/discord/:userId', async (req, res) => {
         artist: spotify.artist,
         song: spotify.song,
         image: spotify.album_art_url,
+        track_id: spotify.track_id,
+        timestamps: {
+          start: spotify.timestamps.start,
+          end: spotify.timestamps.end,
+        },
       }))
       : userData.data.spotify
         ? [{
@@ -131,12 +142,21 @@ app.get('/discord/:userId', async (req, res) => {
           artist: userData.data.spotify.artist,
           song: userData.data.spotify.song,
           image: userData.data.spotify.album_art_url,
+          track_id: userData.data.spotify.track_id,
+          timestamps: {
+            start: userData.data.spotify.timestamps.start,
+            end: userData.data.spotify.timestamps.end,
+          }
         }]
         : [],
     avatar: `https://cdn.discordapp.com/avatars/${userData.data.discord_user.id}/${userData.data.discord_user.avatar}.png?size=1024`,
     username: userData.data.discord_user.username,
     displayName: userData.data.discord_user.display_name,
     timetook: Date.now() - startTime + 'ms',
+    modt: {
+      "text": "CuzImStupi4 says hi",
+      "servertime": new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }) + "Europe/Berlin (UTC+2)",
+    }
   };
 
   res.json(filteredData);
@@ -148,13 +168,15 @@ app.get('/', (req, res) => {
   res.json({
     message: 'OK',
     routes: {
-      '/discord': 'discord data',
-      '/:month/:day/:year': 'get age & next birthday'
+      '/discord/:id': 'discord data',
+      '/:month/:day/:year': 'get age & next birthday',
+    },
+    modt: {
+      "text": "CuzImStupi4 says hi",
+      "servertime": new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }) + " Europe/Berlin (UTC+2)",
     }
   });
-
 })
-
 
 app.listen(process.env.port, () => {
   console.log('running: http://localhost:' + process.env.port);
